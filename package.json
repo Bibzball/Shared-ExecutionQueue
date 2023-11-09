@@ -1,0 +1,30 @@
+﻿{
+  "name": "com.jakubslaby.executionqueue",
+  "displayName": "Execution Queue",
+  "description": "Execution Queue",
+  "author": "Jakub Slaby <jakubslaby@gmail.com>",
+  "tags": [],
+  "version": "0.1.0",
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/JakubSlaby/Shared-ExecutionQueue.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JakubSlaby/Shared-ExecutionQueue/issues"
+  },
+  "directories": {
+    "editor": "./Editor"
+  },
+  "keywords": [
+    "utility",
+    "editor",
+    "package",
+    "unity"
+  ],
+  "scripts": {
+    "prepublishOnly": "node package/prepublish.js",
+    "postpublish": "node package/postpublish.js"
+  },
+  "license": "MIT"
+}
