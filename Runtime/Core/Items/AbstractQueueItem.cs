@@ -14,7 +14,7 @@ namespace WhiteSparrow.Shared.Queue.Items
 		public virtual bool IsRunning => State == QueueState.Running || State == QueueState.Stopping;
 		public virtual bool IsDone => State == QueueState.Completed || State == QueueState.Stopped;
 
-		private QueueItemDelegate m_onComplete;
+		private QueueItemDelegate m_OnComplete;
 		public event QueueItemDelegate OnComplete
 		{
 			add
@@ -22,9 +22,9 @@ namespace WhiteSparrow.Shared.Queue.Items
 				if (IsDone)
 					value(this);
 				else
-					m_onComplete += value;
+					m_OnComplete += value;
 			}
-			remove => m_onComplete -= value;
+			remove => m_OnComplete -= value;
 		}
 		
 		public void Start()
@@ -65,12 +65,13 @@ namespace WhiteSparrow.Shared.Queue.Items
 				m_Result = result;
 			}
 
+			InvokeOnComplete();
 		}
 
 		protected virtual void InvokeOnComplete()
 		{
-			m_onComplete?.Invoke(this);
-			m_onComplete = null;
+			m_OnComplete?.Invoke(this);
+			m_OnComplete = null;
 		}
 
 		public void Stop()
