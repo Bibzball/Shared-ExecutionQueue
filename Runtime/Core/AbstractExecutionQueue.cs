@@ -211,7 +211,12 @@ namespace WhiteSparrow.Shared.Queue
 		private void OnItemComplete(IQueueItem item)
 		{
 			item.OnComplete -= OnItemComplete;
-			m_currentItems.Remove(item as T);
+
+			if (item is T itemT)
+			{
+				m_currentItems.Remove(itemT);
+				OnCompletedItem(itemT);
+			}
 
 			if (m_State == QueueState.Stopping)
 			{
@@ -221,6 +226,11 @@ namespace WhiteSparrow.Shared.Queue
 			{
 				ProcessQueue();
 			}
+		}
+
+		protected virtual void OnCompletedItem(T item)
+		{
+			
 		}
 
 		private QueueResult VerifyComplete()
