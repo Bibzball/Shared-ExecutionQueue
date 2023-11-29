@@ -1,4 +1,5 @@
-﻿using WhiteSparrow.Shared.Queue.Items;
+﻿using UnityEngine;
+using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
@@ -7,4 +8,10 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		void Load();
 		void Unload();
 	}
+
+	public interface ILoadAssetQueueItem : ILoadQueueItem
+	{
+		object Asset { get; }
+	}
+
 }

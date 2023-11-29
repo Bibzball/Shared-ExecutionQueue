@@ -10,6 +10,7 @@ namespace WhiteSparrow.Shared.Queue.Items
 		internal QueueState m_State = QueueState.None;
 		public virtual QueueState State => m_State;
 
+		public object UserData { get; set; }
 
 		public virtual bool IsRunning => State == QueueState.Running || State == QueueState.Stopping;
 		public virtual bool IsDone => State == QueueState.Completed || State == QueueState.Stopped;

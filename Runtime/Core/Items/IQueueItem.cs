@@ -6,6 +6,7 @@ namespace WhiteSparrow.Shared.Queue.Items
 	
 	public interface IQueueItem
 	{
+		object UserData { get; set; }
 		QueueResult Result { get; }
 		QueueState State { get; }
 		

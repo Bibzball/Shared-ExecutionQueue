@@ -1,17 +1,17 @@
-﻿{
+{
   "name": "com.jakubslaby.executionqueue",
   "displayName": "Execution Queue",
   "description": "Execution Queue",
   "author": "Jakub Slaby <jakubslaby@gmail.com>",
   "tags": [],
-  "version": "0.1.2",
+  "version": "0.1.3",
   "dependencies": {},
   "repository": {
     "type": "git",
-    "url": "git://github.com/JakubSlaby/Shared-ExecutionQueue.git"
+    "url": "git://github.com/TrailmixGames/Shared-ExecutionQueue.git"
   },
   "bugs": {
-    "url": "https://github.com/JakubSlaby/Shared-ExecutionQueue/issues"
+    "url": "https://github.com/TrailmixGames/Shared-ExecutionQueue/issues"
   },
   "directories": {
     "editor": "./Editor"

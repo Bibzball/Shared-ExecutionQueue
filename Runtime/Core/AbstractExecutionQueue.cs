@@ -25,6 +25,8 @@ namespace WhiteSparrow.Shared.Queue
 			set => m_MaxConcurrentItems = Mathf.Max(1, value);
 		}
 		
+		public object UserData { get; set; }
+
 		/// <summary>
 		/// When set to TRUE, will automatically start after any item is added, even after completing the items currently in queue. Default: FALSE
 		/// Automatic start does not work with Execution Command overwrite.
