@@ -10,14 +10,19 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 	{
 		private bool m_IsLoadOperation;
 		private LoadSceneMode m_LoadMode;
+		private bool m_ActivateOnLoad;
 
 		
-		public LoadAddressableSceneQueueItem(AssetReference assetReference) : base(assetReference)
+		public LoadAddressableSceneQueueItem(AssetReference assetReference, LoadSceneMode loadMode = LoadSceneMode.Single, bool activateOnLoad = true) : base(assetReference)
 		{
+			m_LoadMode = loadMode;
+			m_ActivateOnLoad = activateOnLoad;
 		}
 
-		public LoadAddressableSceneQueueItem(ICustomAddressableReference assetReference) : base(assetReference)
+		public LoadAddressableSceneQueueItem(ICustomAddressableReference assetReference, LoadSceneMode loadMode = LoadSceneMode.Single, bool activateOnLoad = true) : base(assetReference)
 		{
+			m_LoadMode = loadMode;
+			m_ActivateOnLoad = activateOnLoad;
 		}
 
 		public Scene SceneAsset
@@ -34,7 +39,7 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		protected override AsyncOperationHandle<SceneInstance> TriggerAssetLoad(AssetReference assetReference)
 		{
 			m_IsLoadOperation = true;
-			return Addressables.LoadSceneAsync(assetReference, m_LoadMode, true);
+			return Addressables.LoadSceneAsync(assetReference, m_LoadMode, m_ActivateOnLoad);
 		}
 
 		protected AsyncOperationHandle<SceneInstance> m_unloadHandle;
