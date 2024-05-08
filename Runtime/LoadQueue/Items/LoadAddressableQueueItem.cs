@@ -7,7 +7,7 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 	public delegate void LoadQueueItemDelegate(IQueueItem item);
 	public delegate void LoadQueueItemDelegate<T>(LoadAddressableQueueItem<T> item);
 
-	public abstract class AbstractLoadAddressableQueueItem : AbstractLoadQueueItem, ILoadAssetQueueItem
+	public abstract class AbstractLoadAddressableQueueItem : AbstractLoadQueueItem, ILoadAddressableAssetQueueItem
 	{
 		private AssetReference m_AssetReference;
 		public AssetReference AssetReference => m_AssetReference;
