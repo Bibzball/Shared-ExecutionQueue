@@ -42,6 +42,8 @@ namespace WhiteSparrow.Shared.Queue.Items
 
 		protected abstract void Execute();
 
+		public virtual bool ForceCompleteOnMainThread { get; set; } = false;
+        
 		protected void End()
 		{
 			End(QueueResult.Success);
@@ -49,24 +51,30 @@ namespace WhiteSparrow.Shared.Queue.Items
 
 		protected void End(QueueResult result)
 		{
-			if (m_Result != QueueResult.None)
-			{
-				// TODO Already completed
+			if (m_PendingResult != QueueResult.None)
 				return;
-			}
-
-			if (m_State == QueueState.Stopping)
-			{
-				m_State = QueueState.Stopped;
-				m_Result = result == QueueResult.Success ? QueueResult.Stop : result;
-			}
+            
+			if (ForceCompleteOnMainThread)
+				EndOnMainThread(result);
 			else
-			{
-				m_State = QueueState.Completed;
-				m_Result = result;
-			}
+				EndContinuation();
+		}
 
-			InvokeOnComplete();
+		protected void EndOnMainThread() => EndOnMainThread(QueueResult.Success);
+		protected void EndOnMainThread(QueueResult result)
+		{
+			if (m_PendingResult != QueueResult.None)
+				return;
+			m_PendingResult = result;
+			ExecutionQueueThreadUtility.CallOnMainThread += EndContinuation;
+		}
+
+		private QueueResult m_PendingResult;
+		private void EndContinuation()
+		{
+			m_State = QueueState.Completed;
+            m_Result = m_PendingResult;
+            InvokeOnComplete();
 		}
 
 		protected virtual void InvokeOnComplete()

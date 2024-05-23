@@ -57,9 +57,5 @@ namespace Plugins.WhiteSparrow.Queue.Examples
 			
 		}
 
-		protected override void ExecuteStop()
-		{
-			End();
-		}
 	}
 }
