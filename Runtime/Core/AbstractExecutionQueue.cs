@@ -55,7 +55,7 @@ namespace WhiteSparrow.Shared.Queue
 			OnItemAdded(item);
 			
 			if(AutomaticStart && State != QueueState.Running)
-				Start();
+				_StartFromAutomatic();
 		}
 		
 		protected virtual void OnItemAdded(T item)
@@ -134,6 +134,20 @@ namespace WhiteSparrow.Shared.Queue
 
 			OnQueueStart();
 			ProcessQueue();
+		}
+
+		private void _StartFromAutomatic()
+		{
+			if(m_State == QueueState.Running || m_State == QueueState.Stopping)
+				return;
+			
+			m_State = QueueState.Running;
+			
+			m_iteratedItems = EvaluateIteratedItems();
+
+			OnQueueStart();
+			ProcessQueue();
+			
 		}
 
 		protected virtual void OnQueueStart()
@@ -279,6 +293,19 @@ namespace WhiteSparrow.Shared.Queue
 
 			m_Result = QueueResult.Stop;
 			m_State = QueueState.Stopped;
+
+			if (AutomaticStart)
+			{
+				for (int i = m_allItems.Count; i >= 0; i--)
+				{
+					if(m_allItems[i].State != QueueState.None)
+						continue;
+					
+					_StartFromAutomatic();
+					return;
+				}
+			}
+			
 			m_onComplete?.Invoke(this);
 		}
 		

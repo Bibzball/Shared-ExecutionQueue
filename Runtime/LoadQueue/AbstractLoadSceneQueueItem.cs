@@ -4,8 +4,10 @@ using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
+	public delegate void LoadSceneQueueItemDelegate(IQueueItem item);
 	public abstract class AbstractSceneLoadQueueItem : AbstractLoadQueueItem
 	{
+
 		private Scene m_Scene;
 		public Scene scene => m_Scene;
 		
@@ -43,6 +45,25 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		}
 
 		protected abstract bool IsLoadedSceneTarget(Scene scene, LoadSceneMode loadSceneMode);
+		
+		
+		private LoadSceneQueueItemDelegate m_OnComplete;
+		public event LoadSceneQueueItemDelegate OnComplete
+		{
+			add
+			{
+				if (IsDone)
+					value(this);
+				else
+					m_OnComplete += value;
+			}
+			remove => m_OnComplete -= value;
+		}
 
+		protected override void InvokeOnComplete()
+		{
+			base.InvokeOnComplete();
+			m_OnComplete?.Invoke(this);
+		}
 	}
 }

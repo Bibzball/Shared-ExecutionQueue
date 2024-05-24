@@ -4,7 +4,10 @@ using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
-	public abstract class AbstractLoadAddressableQueueItem : AbstractLoadQueueItem, ILoadAssetQueueItem
+	public delegate void LoadQueueItemDelegate(IQueueItem item);
+	public delegate void LoadQueueItemDelegate<T>(LoadAddressableQueueItem<T> item);
+
+	public abstract class AbstractLoadAddressableQueueItem : AbstractLoadQueueItem, ILoadAddressableAssetQueueItem
 	{
 		private AssetReference m_AssetReference;
 		public AssetReference AssetReference => m_AssetReference;
@@ -30,6 +33,26 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 	
 	public class LoadAddressableQueueItem<T> : AbstractLoadAddressableQueueItem
 	{
+		private LoadQueueItemDelegate<T> m_OnComplete;
+		public new event LoadQueueItemDelegate<T> OnComplete
+		{
+			add
+			{
+				if (IsDone)
+					value(this);
+				else
+					m_OnComplete += value;
+			}
+			remove => m_OnComplete -= value;
+		}
+
+		protected override void InvokeOnComplete()
+		{
+			m_OnComplete?.Invoke(this);
+			m_OnComplete = null;
+			base.InvokeOnComplete();
+		}
+		
 		public LoadAddressableQueueItem(AssetReference assetReference) : base(assetReference)
 		{
 		}
@@ -50,6 +73,9 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 
 		private AsyncOperationHandle m_LoadOperation;
 		protected AsyncOperationHandle LoadOperation;
+	
+		
+		
 
 		protected override void ExecuteLoad()
 		{
