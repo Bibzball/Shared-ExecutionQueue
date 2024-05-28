@@ -48,6 +48,9 @@ namespace WhiteSparrow.Shared.Queue
 		
 		public void Add(T item)
 		{
+			if (item == null)
+				return;
+			
 			m_allItems.Add(item);
 			m_allItemsCache = null;
 			m_iteratedItems = null;
@@ -65,6 +68,9 @@ namespace WhiteSparrow.Shared.Queue
 
 		public void Remove(T item)
 		{
+			if (item == null)
+				return;
+
 			if (!m_allItems.Contains(item))
 				return;
 

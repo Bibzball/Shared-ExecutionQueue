@@ -57,7 +57,10 @@ namespace WhiteSparrow.Shared.Queue.Items
 			if (ForceCompleteOnMainThread)
 				EndOnMainThread(result);
 			else
+			{
+				m_PendingResult = result;
 				EndContinuation();
+			}
 		}
 
 		protected void EndOnMainThread() => EndOnMainThread(QueueResult.Success);
