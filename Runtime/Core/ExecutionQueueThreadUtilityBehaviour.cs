@@ -53,6 +53,7 @@ namespace WhiteSparrow.Shared.Queue
 		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterAssembliesLoaded)]
 		private static void Initialize()
 		{
+			Debug.Log("ExecutionQueueThreadUtility initialize");
 			s_MainThread = Thread.CurrentThread.ManagedThreadId;
 			GameObject go = new GameObject("ExecutionQueue Utility");
 			GameObject.DontDestroyOnLoad(go);
