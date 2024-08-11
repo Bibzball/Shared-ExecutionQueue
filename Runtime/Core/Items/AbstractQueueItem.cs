@@ -14,6 +14,14 @@ namespace WhiteSparrow.Shared.Queue.Items
 
 		public virtual bool IsRunning => State == QueueState.Running || State == QueueState.Stopping;
 		public virtual bool IsDone => State == QueueState.Completed || State == QueueState.Stopped;
+		public bool ForceMainThread { get; set; } = false;
+		protected virtual bool forceMainThread => false;
+		protected bool _useMainThread => ForceMainThread || forceMainThread;
+		
+		public bool ForceCompleteOnMainThread { get; set; } = false;
+		protected virtual bool forceCompleteOnMainThread => false;
+		protected bool _useCompleteOnMainThread => _useMainThread || ForceCompleteOnMainThread || forceCompleteOnMainThread;
+
 
 		private QueueItemDelegate m_OnComplete;
 		public event QueueItemDelegate OnComplete
@@ -28,21 +36,26 @@ namespace WhiteSparrow.Shared.Queue.Items
 			remove => m_OnComplete -= value;
 		}
 		
-		public void Start()
+		public IQueueItem Start()
 		{
 			if (State != QueueState.None)
 			{
-				Debug.Log("Already started");
-				return;
+				Debug.Log($"QueueItem {this.GetType().FullName} already started");
+				return this;
 			}
 
 			m_State = QueueState.Running;
-			Execute();
+
+			if (_useMainThread)
+				ExecutionQueueThreadUtility.ExecuteOnMainThread(Execute);
+			else
+				Execute();
+			
+			return this;
 		}
 
 		protected abstract void Execute();
 
-		public virtual bool ForceCompleteOnMainThread { get; set; } = false;
         
 		protected void End()
 		{
@@ -54,7 +67,7 @@ namespace WhiteSparrow.Shared.Queue.Items
 			if (m_PendingResult != QueueResult.None)
 				return;
             
-			if (ForceCompleteOnMainThread)
+			if (_useCompleteOnMainThread)
 				EndOnMainThread(result);
 			else
 			{
@@ -69,7 +82,7 @@ namespace WhiteSparrow.Shared.Queue.Items
 			if (m_PendingResult != QueueResult.None)
 				return;
 			m_PendingResult = result;
-			ExecutionQueueThreadUtility.CallOnMainThread += EndContinuation;
+			ExecutionQueueThreadUtility.ExecuteOnMainThread(EndContinuation);
 		}
 
 		private QueueResult m_PendingResult;
@@ -99,6 +112,28 @@ namespace WhiteSparrow.Shared.Queue.Items
 		protected virtual void ExecuteStop()
 		{
 			Debug.Log("Stop requested");
+		}
+
+		~AbstractQueueItem()
+		{
+			Dispose();
+		}
+		
+		private bool m_Dispose;
+		public void Dispose()
+		{
+			if (m_Dispose)
+				return;
+			m_Dispose = true;
+			OnDispose();
+			
+			UserData = null;
+			m_OnComplete = null;
+		}
+
+		protected virtual void OnDispose()
+		{
+			
 		}
 	}
 }

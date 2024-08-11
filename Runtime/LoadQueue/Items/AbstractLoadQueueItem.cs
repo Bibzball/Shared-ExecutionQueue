@@ -17,16 +17,18 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 			}
 		}
 		
-		public void Load()
+		public ILoadQueueItem Load()
 		{
 			SetOperation(LoadQueueOperation.Load);
 			base.Start();
+			return this;
 		}
 
-		public void Unload()
+		public ILoadQueueItem Unload()
 		{
 			SetOperation(LoadQueueOperation.Unload);
 			Start();
+			return this;
 		}
 
 		protected abstract void ExecuteLoad();

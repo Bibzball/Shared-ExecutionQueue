@@ -4,7 +4,7 @@ namespace WhiteSparrow.Shared.Queue.Items
 {
 	public delegate void QueueItemDelegate(IQueueItem item);
 	
-	public interface IQueueItem
+	public interface IQueueItem : IDisposable
 	{
 		object UserData { get; set; }
 		QueueResult Result { get; }
@@ -15,7 +15,7 @@ namespace WhiteSparrow.Shared.Queue.Items
 
 		event QueueItemDelegate OnComplete;
 
-		void Start();
+		IQueueItem Start();
 	}
 
 	public interface IStopQueueItem

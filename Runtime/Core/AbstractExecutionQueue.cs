@@ -46,10 +46,11 @@ namespace WhiteSparrow.Shared.Queue
 			return m_allItemsCache;
 		}
 		
-		public void Add(T item)
+		public TItem Add<TItem>(TItem item)
+			where TItem : class, T
 		{
 			if (item == null)
-				return;
+				return null;
 			
 			m_allItems.Add(item);
 			m_allItemsCache = null;
@@ -59,6 +60,8 @@ namespace WhiteSparrow.Shared.Queue
 			
 			if(AutomaticStart && State != QueueState.Running)
 				_StartFromAutomatic();
+
+			return item;
 		}
 		
 		protected virtual void OnItemAdded(T item)
@@ -98,9 +101,10 @@ namespace WhiteSparrow.Shared.Queue
 
 		#region Execution API
 
-		public void Start()
+		public IQueueItem Start()
 		{
 			_Start();
+			return this;
 		}
 
 		public void Stop()
@@ -330,8 +334,36 @@ namespace WhiteSparrow.Shared.Queue
 			}
 			remove => m_onComplete -= value;
 		}
-		
 
+		~AbstractExecutionQueue()
+		{
+			Dispose();
+		}
 		
+		private bool m_Dispose;
+		public void Dispose()
+		{
+			if (m_Dispose)
+				return;
+			m_Dispose = true;
+			OnDispose();
+			
+			UserData = null;
+			m_onComplete = null;
+
+			var items = m_allItems.ToArray();
+			m_allItems.Clear();
+			m_allItems = null;
+			m_allItemsCache = null;
+			foreach (var item in items)
+			{
+				item.Dispose();
+			}
+		}
+
+		protected virtual void OnDispose()
+		{
+			
+		}
 	}
 }

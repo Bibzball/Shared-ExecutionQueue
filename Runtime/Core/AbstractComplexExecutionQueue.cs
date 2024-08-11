@@ -10,10 +10,10 @@ namespace WhiteSparrow.Shared.Queue
 	{
 		private TOperation m_Operation;
 
-		protected virtual void Start(TOperation operation)
+		protected virtual IQueueItem Start(TOperation operation)
 		{
 			SetOperation(operation);
-			Start();
+			return Start();
 		}
 		
 		public void SetOperation(TOperation operation)

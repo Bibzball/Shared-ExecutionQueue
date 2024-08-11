@@ -1,4 +1,5 @@
 using UnityEngine;
+using WhiteSparrow.Shared.Queue;
 using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue

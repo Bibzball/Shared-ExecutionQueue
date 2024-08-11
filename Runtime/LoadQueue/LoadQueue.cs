@@ -1,4 +1,5 @@
 ﻿using WhiteSparrow.Shared.Queue;
+using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
@@ -9,14 +10,16 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 			SetOperation(LoadQueueOperation.Load);
 		}
 		
-		public void Load()
+		public ILoadQueueItem Load()
 		{
 			base.Start(LoadQueueOperation.Load);
+			return this;
 		}
 
-		public void Unload()
+		public ILoadQueueItem Unload()
 		{
 			base.Start(LoadQueueOperation.Unload);
+			return this;
 		}
 
 	}
