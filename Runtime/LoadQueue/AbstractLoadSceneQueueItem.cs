@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 using WhiteSparrow.Shared.Queue.Items;
 
@@ -11,20 +12,20 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		private Scene m_Scene;
 		public Scene scene => m_Scene;
 		
-		protected override async void ExecuteLoad()
+		protected override async UniTask ExecuteLoad()
 		{
 			SceneManager.sceneLoaded += OnSceneLoaded;
 			await LoadScene();
 			SceneManager.sceneLoaded -= OnSceneLoaded;
 			
-			End(ValidateLoadResult() ? QueueResult.Success : QueueResult.Fail);
+			SetResult(ValidateLoadResult() ? QueueResult.Success : QueueResult.Fail);
 		}
 
-		protected override async void ExecuteUnload()
+		protected override async UniTask ExecuteUnload()
 		{
 			await UnloadScene();
 			
-			End(QueueResult.Success);
+			SetResult(QueueResult.Success);
 		}
 
 		protected abstract Task LoadScene();
@@ -48,7 +49,7 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		
 		
 		private LoadSceneQueueItemDelegate m_OnComplete;
-		public event LoadSceneQueueItemDelegate OnComplete
+		public new event LoadSceneQueueItemDelegate OnComplete
 		{
 			add
 			{

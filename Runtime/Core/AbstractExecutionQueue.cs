@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using WhiteSparrow.Shared.Queue.Items;
 
 namespace WhiteSparrow.Shared.Queue
 {
-	public abstract class AbstractExecutionQueue<T> : IQueueItem, IStopQueueItem
+	public abstract class AbstractExecutionQueue<T> : IQueueItem
 		where T : class, IQueueItem
 	{
 		#region Status API
@@ -110,6 +111,17 @@ namespace WhiteSparrow.Shared.Queue
 		public void Stop()
 		{
 			_Stop();
+		}
+
+		public IQueueItem WithCancellation(CancellationToken token)
+		{
+			token.Register(OnExternalCancellationInvoked);
+			return this;
+		}
+
+		private void OnExternalCancellationInvoked()
+		{
+			Stop();
 		}
 
 		#endregion
@@ -291,8 +303,7 @@ namespace WhiteSparrow.Shared.Queue
 			
 			foreach (var currentItem in m_StopList)
 			{
-				if(currentItem is IStopQueueItem stopItem)
-					stopItem.Stop();
+				currentItem.Stop();
 			}
 		}
 

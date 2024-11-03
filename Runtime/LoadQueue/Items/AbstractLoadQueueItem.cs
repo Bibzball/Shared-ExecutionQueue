@@ -1,26 +1,16 @@
-﻿using WhiteSparrow.Shared.Queue.Items;
+﻿using Cysharp.Threading.Tasks;
+using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
 	public abstract class AbstractLoadQueueItem : AbstractComplexQueueItem<LoadQueueOperation>, ILoadQueueItem
 	{
-		protected override void ExecuteOperation(LoadQueueOperation operation)
-		{
-			switch (operation)
-			{
-				case LoadQueueOperation.Load:
-					ExecuteLoad();
-					break;
-				case LoadQueueOperation.Unload:
-					ExecuteUnload();
-					break;
-			}
-		}
+		
 		
 		public ILoadQueueItem Load()
 		{
 			SetOperation(LoadQueueOperation.Load);
-			base.Start();
+			Start();
 			return this;
 		}
 
@@ -30,10 +20,22 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 			Start();
 			return this;
 		}
-
-		protected abstract void ExecuteLoad();
 		
-		protected abstract void ExecuteUnload();
+		protected override UniTask ExecuteOperation(LoadQueueOperation operation)
+		{
+			switch (operation)
+			{
+				case LoadQueueOperation.Load:
+					return ExecuteLoad();
+				case LoadQueueOperation.Unload:
+					return ExecuteUnload();
+			}
+			return UniTask.CompletedTask;
+		}
+
+		protected abstract UniTask ExecuteLoad();
+		
+		protected abstract UniTask ExecuteUnload();
 
 		private LoadQueueItemDelegate m_OnComplete;
 		public new event LoadQueueItemDelegate OnComplete

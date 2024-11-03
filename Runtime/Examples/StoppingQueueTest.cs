@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using WhiteSparrow.Shared.Queue;
 using WhiteSparrow.Shared.Queue.Items;
@@ -48,14 +49,15 @@ namespace Plugins.WhiteSparrow.Queue.Examples
 			await Task.Delay(randomDelayMs);
 			Debug.Log($"Completed Delay Task: {taskId}");
 		}
+
+		private async UniTask ExampleUniTaskItem()
+		{
+			
+		}
 	}
 
 	public class StoppableTask : AbstractQueueItem
 	{
-		protected override void Execute()
-		{
-			
-		}
-
+		protected override UniTask Execute() => UniTask.CompletedTask;
 	}
 }

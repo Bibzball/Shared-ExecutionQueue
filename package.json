@@ -26,5 +26,6 @@
     "prepublishOnly": "node package/prepublish.js",
     "postpublish": "node package/postpublish.js"
   },
+  "testables": ["WhiteSparrow.ExecutionQueue.EditorTests", "WhiteSparrow.ExecutionQueue.Tests"],
   "license": "MIT"
 }
