@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace WhiteSparrow.Shared.Queue.Items
 {
@@ -16,11 +17,9 @@ namespace WhiteSparrow.Shared.Queue.Items
 		event QueueItemDelegate OnComplete;
 
 		IQueueItem Start();
-	}
-
-	public interface IStopQueueItem
-	{
 		void Stop();
+
+		IQueueItem WithCancellation(CancellationToken cancellationToken);
 	}
 
 	public interface IComplexQueueItem<T>

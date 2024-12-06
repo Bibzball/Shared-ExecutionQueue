@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 
 namespace WhiteSparrow.Shared.Queue.Items
 {
@@ -12,27 +13,21 @@ namespace WhiteSparrow.Shared.Queue.Items
 		{
 			m_executeCall = call;
 		}
-		
-		protected override async void Execute()
-		{
-			
-			if (m_executeCall != null)
-				m_executingTask = Task.Run(m_executeCall);
 
-			if (m_executingTask == null)
-			{
-				End();
-				return;
-			}
-			
-			await m_executingTask;
-			End();
-		}
-		
 		public static implicit operator QueueAsyncTaskItem(Func<Task> call)
 		{
 			return new QueueAsyncTaskItem(call);
 		}
 
+		protected override async UniTask Execute()
+		{
+			if (m_executeCall != null)
+				m_executingTask = Task.Run(m_executeCall);
+
+			if (m_executingTask == null)
+				return;
+			
+			await m_executingTask;
+		}
 	}
 }

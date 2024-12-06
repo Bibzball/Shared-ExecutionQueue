@@ -1,8 +1,8 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
-using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
@@ -43,7 +43,7 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		}
 
 		protected AsyncOperationHandle<SceneInstance> m_unloadHandle;
-		protected override void ExecuteUnload()
+		protected override async UniTask ExecuteUnload()
 		{
 			if (m_IsLoadOperation && LoadOperation.IsValid())
 			{
@@ -56,24 +56,10 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 				m_unloadHandle = Addressables.UnloadSceneAsync(LoadOperation);
 			}
 			else
-			{
-				End(QueueResult.Success);
 				return;
-			}
 
-			if (m_unloadHandle.IsDone)
-			{
-				End(QueueResult.Success);
-				return;
-			}
-
-			m_unloadHandle.Completed += SceneUnloadCompleted;
-		}
-
-		private void SceneUnloadCompleted(AsyncOperationHandle<SceneInstance> obj)
-		{
-			m_unloadHandle.Completed -= SceneUnloadCompleted;
-			End(QueueResult.Success);
+			await m_unloadHandle;
+			
 		}
 	}
 }

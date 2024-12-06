@@ -1,5 +1,5 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
-using WhiteSparrow.Shared.Queue;
 using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
@@ -19,31 +19,25 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 			m_Path = path;
 		}
 		
-		protected override void ExecuteLoad()
+		protected override async UniTask ExecuteLoad()
 		{
 			ResourceRequest request = Resources.LoadAsync<T>(m_Path);
-			request.completed += LoadOperationComplete;
+			await request.WithCancellation(CancellationToken);
+			
+			if (request.asset is T assetT)
+				m_Asset = assetT;
+			SetResult(m_Asset != null ? QueueResult.Success : QueueResult.Fail);
+
 		}
 
-		private void LoadOperationComplete(AsyncOperation op)
-		{
-			op.completed -= LoadOperationComplete;
-			if (op is ResourceRequest request)
-			{
-				if (request.asset is T assetT)
-					m_Asset = assetT;
-			}
-			End(m_Asset != null ? QueueResult.Success : QueueResult.Fail);
-		}
-
-		protected override void ExecuteUnload()
+		protected override UniTask ExecuteUnload()
 		{
 			if (m_Asset != null)
 			{
 				Resources.UnloadAsset(m_Asset);
 				m_Asset = null;
 			}
-			End();
+			return UniTask.CompletedTask;
 		}
 
 		object ILoadAssetQueueItem.Asset => this.Asset;

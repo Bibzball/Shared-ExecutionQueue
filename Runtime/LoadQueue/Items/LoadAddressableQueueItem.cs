@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using WhiteSparrow.Shared.Queue.Items;
@@ -61,7 +62,7 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		{
 		}
 
-		public T Asset
+		public new T Asset
 		{
 			get
 			{
@@ -77,83 +78,74 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		
 		
 
-		protected override void ExecuteLoad()
+		protected override async UniTask ExecuteLoad()
 		{
 			if (AssetReference == null)
 			{
-				End(QueueResult.Fail);
+				SetResult(QueueResult.Fail);
 				return;
 			}
 
 			if (AssetReference.OperationHandle.IsValid())
 			{
 				m_LoadOperation = AssetReference.OperationHandle;
+				await m_LoadOperation;
+
 			}
 			else
 			{
 				m_LoadOperation = TriggerAssetLoad(AssetReference);
+				await m_LoadOperation.WithCancellation(CancellationToken);
 			}
+
 
 			if (m_LoadOperation.OperationException != null)
 			{
-				OnLoadOperationFailed(m_LoadOperation);
+				SetResult(QueueResult.Fail);
 				return;
 			}
-
-			if (m_LoadOperation.IsDone)
-			{
-				OnLoadOperationCompleted(m_LoadOperation);
-			}
-			else
-			{
-				m_LoadOperation.Completed += OnLoadOperationCompleted;
-			}
-		}
-
-		private void OnLoadOperationCompleted(AsyncOperationHandle loadOperation)
-		{
-			loadOperation.Completed -= OnLoadOperationCompleted;
-
-			if (loadOperation.OperationException != null)
-			{
-				OnLoadOperationFailed(loadOperation);
-				return;
-			}
-
-			if (loadOperation.Status == AsyncOperationStatus.Failed)
-			{
-				
-			}
 			
-			End(m_LoadOperation.Status == AsyncOperationStatus.Succeeded ? QueueResult.Success : QueueResult.Fail);
-		}
-
-		protected virtual void OnLoadOperationFailed(AsyncOperationHandle loadOperation)
-		{
-			loadOperation.Completed -= OnLoadOperationCompleted;
-			
-			
+			await OnLoadOperationCompleted(m_LoadOperation);
 		}
 
 		protected virtual AsyncOperationHandle<T> TriggerAssetLoad(AssetReference assetReference)
 		{
-			return assetReference.LoadAssetAsync<T>();
+			return AssetReference.LoadAssetAsync<T>();
 		}
+
+		private UniTask OnLoadOperationCompleted(AsyncOperationHandle loadOperation)
+		{
+			if (loadOperation.OperationException != null)
+			{
+				SetResult(QueueResult.Fail);
+				return UniTask.CompletedTask;
+			}
+
+			if (loadOperation.Status == AsyncOperationStatus.Failed)
+			{
+				SetResult(QueueResult.Fail);
+			}
+			
+			Addressables.ResourceManager.Acquire(m_LoadOperation);
+			return UniTask.CompletedTask;
+		}
+
+
+
 
 		protected virtual void CancelLoad()
 		{
 			if (m_LoadOperation.IsValid())
 			{
-				m_LoadOperation.Completed -= OnLoadOperationCompleted;
 				Addressables.Release(m_LoadOperation);
 			}
 			
 		}
 		
-		protected override void ExecuteUnload()
+		protected override async UniTask ExecuteUnload()
 		{
 			CancelLoad();
-			End(QueueResult.Success);
+			SetResult(QueueResult.Success);
 		}
 
 	}

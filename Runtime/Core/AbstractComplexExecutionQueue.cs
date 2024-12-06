@@ -24,7 +24,7 @@ namespace WhiteSparrow.Shared.Queue
 			if (State == QueueState.Running || State == QueueState.Stopping)
 			{
 				Debug.LogError("You cannot change the state of a Queue Item while it's running. Stop and wait for completion.");
-				return;
+				return; 
 			}
 
 			m_Operation = operation;

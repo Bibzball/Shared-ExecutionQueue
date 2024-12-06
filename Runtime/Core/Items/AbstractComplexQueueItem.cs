@@ -1,4 +1,5 @@
 ﻿using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace WhiteSparrow.Shared.Queue.Items
@@ -30,11 +31,8 @@ namespace WhiteSparrow.Shared.Queue.Items
 			m_Result = QueueResult.None;
 		}
 
-		protected sealed override void Execute()
-		{
-			ExecuteOperation(m_Operation);
-		}
+		protected sealed override UniTask Execute() => ExecuteOperation(m_Operation);
 
-		protected abstract void ExecuteOperation(T operation);
+		protected abstract UniTask ExecuteOperation(T operation);
 	}
 }

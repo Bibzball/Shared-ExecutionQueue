@@ -1,9 +1,15 @@
-﻿using UnityEngine;
+﻿using System.Threading;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace WhiteSparrow.Shared.Queue.Items
 {
 	public abstract class AbstractQueueItem : IQueueItem
 	{
+		private CancellationTokenSource m_CancellationTokenSource;
+		protected CancellationToken CancellationToken => m_CancellationTokenSource.Token;
+		
+		
 		internal QueueResult m_Result = QueueResult.None;
 		public QueueResult Result => m_Result;
 
@@ -14,14 +20,8 @@ namespace WhiteSparrow.Shared.Queue.Items
 
 		public virtual bool IsRunning => State == QueueState.Running || State == QueueState.Stopping;
 		public virtual bool IsDone => State == QueueState.Completed || State == QueueState.Stopped;
-		public bool ForceMainThread { get; set; } = false;
-		protected virtual bool forceMainThread => false;
-		protected bool _useMainThread => ForceMainThread || forceMainThread;
 		
-		public bool ForceCompleteOnMainThread { get; set; } = false;
-		protected virtual bool forceCompleteOnMainThread => false;
-		protected bool _useCompleteOnMainThread => _useMainThread || ForceCompleteOnMainThread || forceCompleteOnMainThread;
-
+		protected UniTask m_InternalTask;
 
 		private QueueItemDelegate m_OnComplete;
 		public event QueueItemDelegate OnComplete
@@ -35,6 +35,11 @@ namespace WhiteSparrow.Shared.Queue.Items
 			}
 			remove => m_OnComplete -= value;
 		}
+
+		public AbstractQueueItem()
+		{
+			m_CancellationTokenSource = new CancellationTokenSource();
+		}
 		
 		public IQueueItem Start()
 		{
@@ -46,51 +51,36 @@ namespace WhiteSparrow.Shared.Queue.Items
 
 			m_State = QueueState.Running;
 
-			if (_useMainThread)
-				ExecutionQueueThreadUtility.ExecuteOnMainThread(Execute);
-			else
-				Execute();
+			// we want to reset the cancellation token in case it was already triggered
+			if (m_CancellationTokenSource.IsCancellationRequested)
+			{
+				m_CancellationTokenSource.Dispose();
+				m_CancellationTokenSource = new CancellationTokenSource();
+			}
+
+			m_InternalTask = Execute().ContinueWith(OnCompletion).AttachExternalCancellation(m_CancellationTokenSource.Token);
 			
 			return this;
 		}
 
-		protected abstract void Execute();
-
-        
-		protected void End()
-		{
-			End(QueueResult.Success);
-		}
-
-		protected void End(QueueResult result)
-		{
-			if (m_PendingResult != QueueResult.None)
-				return;
-            
-			if (_useCompleteOnMainThread)
-				EndOnMainThread(result);
-			else
-			{
-				m_PendingResult = result;
-				EndContinuation();
-			}
-		}
-
-		protected void EndOnMainThread() => EndOnMainThread(QueueResult.Success);
-		protected void EndOnMainThread(QueueResult result)
-		{
-			if (m_PendingResult != QueueResult.None)
-				return;
-			m_PendingResult = result;
-			ExecutionQueueThreadUtility.ExecuteOnMainThread(EndContinuation);
-		}
-
-		private QueueResult m_PendingResult;
-		private void EndContinuation()
+		private void OnCompletion()
 		{
 			m_State = QueueState.Completed;
-            m_Result = m_PendingResult;
-            InvokeOnComplete();
+			SetResult(QueueResult.Success);
+			InvokeOnComplete();
+		}
+
+
+		protected abstract UniTask Execute();
+
+        
+		protected void SetResult(QueueResult result)
+		{
+			if (m_Result == QueueResult.Fail)
+				return;
+			if (m_Result == QueueResult.Success && result == QueueResult.Stop)
+				return;
+			m_Result = result;
 		}
 
 		protected virtual void InvokeOnComplete()
@@ -105,14 +95,21 @@ namespace WhiteSparrow.Shared.Queue.Items
 				return;
 
 			m_State = QueueState.Stopping;
-
-			ExecuteStop();
+			
+			if(!m_CancellationTokenSource.IsCancellationRequested)
+				m_CancellationTokenSource.Cancel();
+			m_CancellationTokenSource = new CancellationTokenSource();
+			
+			UniTask.Create(ExecuteStop).AttachExternalCancellation(m_CancellationTokenSource.Token).ContinueWith(StopContinuation);
 		}
 
-		protected virtual void ExecuteStop()
+		private void StopContinuation()
 		{
-			Debug.Log("Stop requested");
+			m_State = QueueState.Stopped;
+			InvokeOnComplete();
 		}
+
+		protected virtual UniTask ExecuteStop() => UniTask.CompletedTask;
 
 		~AbstractQueueItem()
 		{
@@ -127,6 +124,8 @@ namespace WhiteSparrow.Shared.Queue.Items
 			m_Dispose = true;
 			OnDispose();
 			
+			m_CancellationTokenSource.Cancel();
+			m_CancellationTokenSource.Dispose();
 			UserData = null;
 			m_OnComplete = null;
 		}
@@ -134,6 +133,17 @@ namespace WhiteSparrow.Shared.Queue.Items
 		protected virtual void OnDispose()
 		{
 			
+		}
+
+		public IQueueItem WithCancellation(CancellationToken token)
+		{
+			token.Register(OnExternalCancellationInvoked);
+			return this;
+		}
+
+		private void OnExternalCancellationInvoked()
+		{
+			Stop();
 		}
 	}
 }
