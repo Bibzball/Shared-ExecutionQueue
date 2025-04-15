@@ -3,6 +3,8 @@ using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
+	public delegate void LoadQueueItemDelegate(IQueueItem item);
+	
 	public abstract class AbstractLoadQueueItem : AbstractComplexQueueItem<LoadQueueOperation>, ILoadQueueItem
 	{
 		

@@ -1,3 +1,4 @@
+#if EXECUTIONQUEUE_ADRESSABLES
 using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -63,3 +64,4 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		}
 	}
 }
+#endif

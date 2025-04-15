@@ -1,3 +1,4 @@
+#if EXECUTIONQUEUE_ADRESSABLES
 using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
@@ -5,7 +6,6 @@ using WhiteSparrow.Shared.Queue.Items;
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
-	public delegate void LoadQueueItemDelegate(IQueueItem item);
 	public delegate void LoadQueueItemDelegate<T>(LoadAddressableQueueItem<T> item);
 
 	public abstract class AbstractLoadAddressableQueueItem : AbstractLoadQueueItem, ILoadAddressableAssetQueueItem
@@ -155,3 +155,4 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		AssetReference AssetReference { get; }
 	}
 }
+#endif

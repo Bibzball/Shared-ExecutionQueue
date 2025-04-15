@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
+#if EXECUTIONQUEUE_ADRESSABLES
 using UnityEngine.AddressableAssets;
+#endif
 
 namespace Plugins.WhiteSparrow.Queue.LoadQueue
 {
@@ -25,6 +27,8 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 		public abstract bool IsLoadTypeSupported(LoadType candidate);
 	}
 
+	
+#if EXECUTIONQUEUE_ADRESSABLES
 	[Serializable]
 	public abstract class AbstractLoadAssetField<T> : AbstractLoadAssetField
 		where T : UnityEngine.Object
@@ -70,7 +74,7 @@ namespace Plugins.WhiteSparrow.Queue.LoadQueue
 			return true;
 		}
 	}
-	
+#endif
 	
 	
 }
